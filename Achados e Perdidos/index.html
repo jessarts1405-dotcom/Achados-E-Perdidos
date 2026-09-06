@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Achados e Perdidos — Por Escola</title>
+  <style>
+/* =============================================
+   PALETA DE CORES
+   ============================================= */
+:root {
+  --azul-escuro: #0A2342;
+  --azul-intermediario: #1E3A5F;
+  --azul-claro: #3C6382;
+  --branco: #FFFFFF;
+  --sucesso: #28A745;
+  --erro: #DC3545;
+  --aviso: #FFC107;
+  --sombra: rgba(10, 35, 66, 0.15);
+}
+/* =============================================
+   RESET E ESTILOS GERAIS
+   ============================================= */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+}
+body {
+  background-color: #f0f4f8;
+  color: var(--azul-escuro);
+  line-height: 1.6;
+  min-height: 100vh;
+}
+a { text-decoration: none; color: inherit; }
+button, input { font-size: 1rem; border: none; border-radius: 6px; padding: 12px 16px; }
+/* =============================================
+   LOGO DO URSO — CENTRALIZADA EM CIMA DE TUDO
+   ============================================= */
+.logo-topo {
+  width: 130px;
+  height: 130px;
+  display: block;
+  margin: 0 auto 16px auto;
+  object-fit: contain;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #e0e0e0, #f5f5f5);
+  padding: 8px;
+}
+.logo-cabecalho {
+  width: 48px;
+  height: 48px;
+  margin-right: 12px;
+  vertical-align: middle;
+  object-fit: contain;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #e0e0e0, #f5f5f5);
+  padding: 4px;
+}
+.preview-foto {
+  width: 120px; height: 120px; border-radius: 8px; object-fit: cover;
+  margin: 10px auto; display: block; border: 3px solid var(--azul-escuro); background: #d1dce8;
+}
+.preview-foto-perfil { border-radius: 50%; }
+/* =============================================
+   CONTAINERS E CAIXAS
+   ============================================= */
+.container { max-width: 1000px; margin: 0 auto; padding: 20px; }
+.caixa-formulario {
+  background: var(--branco);
+  padding: 32px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px var(--sombra);
+  max-width: 480px;
+  margin: 40px auto;
+}
+.titulo { text-align: center; color: var(--azul-escuro); margin-bottom: 24px; font-size: 1.8rem; }
+.subtitulo { color: var(--azul-intermediario); margin-bottom: 16px; font-size: 1.2rem; }
+.badge-escola {
+  display: inline-block;
+  background: var(--azul-claro);
+  color: white;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  margin-bottom: 16px;
+}
+/* =============================================
+   LINHA DIVISÓRIA
+   ============================================= */
+.linha-divisoria {
+  display: flex;
+  align-items: center;
+  margin: 24px 0;
+}
+.linha-divisoria::before,
+.linha-divisoria::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: #ccc;
+}
+.linha-divisoria span {
+  padding: 0 12px;
+  color: #777;
+  font-size: 0.9rem;
+}
+/* =============================================
+   CAMPOS DE ENTRADA
+   ============================================= */
+.grupo-campo { margin-bottom: 20px; }
+label { display: block; margin-bottom: 6px; font-weight: 500; color: var(--azul-escuro); }
+input, textarea {
+  width: 100%;
+  border: 2px solid #d1dce8;
+  border-radius: 6px;
+  padding: 12px;
+  transition: border-color 0.3s;
+}
+input:focus, textarea:focus { outline: none; border-color: var(--azul-escuro); }
+input[type="file"] { border: none; padding: 8px 0; }
+.aviso-email { font-size: 0.85rem; color: var(--azul-claro); margin-top: 4px; line-height: 1.5; }
+.aviso-escola { font-size: 0.85rem; color: var(--azul-claro); margin-top: 4px; }
+.aviso-telefone { font-size: 0.85rem; color: var(--azul-claro); margin-top: 4px; line-height: 1.5; }
+.ou-separador { text-align: center; margin: 10px 0; color: #777; font-size: 0.9rem; }
+/* =============================================
+   BOTÕES
+   ============================================= */
+.botao {
+  background-color: var(--azul-escuro); color: var(--branco); font-weight: 600;
+  cursor: pointer; width: 100%; transition: background 0.3s, transform 0.1s; margin-top: 8px;
+}
+.botao:hover { background-color: var(--azul-intermediario); }
+.botao:active { transform: scale(0.98); }
+.botao-voltar { background-color: var(--azul-claro); margin-top: 24px; }
+.botao-linha { width: auto; display: inline-block; margin-right: 10px; }
+/* =============================================
+   MENSAGENS
+   ============================================= */
+.mensagem {
+  padding: 12px; border-radius: 6px; margin: 16px 0; text-align: center;
+  font-weight: 500; display: none;
+}
+.mensagem.sucesso { background: #E8F5E9; color: var(--sucesso); border: 1px solid #C8E6C9; }
+.mensagem.erro { background: #FFEBEE; color: var(--erro); border: 1px solid #FFCDD2; }
+/* =============================================
+   NAVEGAÇÃO E CARTÕES
+   ============================================= */
+.navegacao {
+  background: var(--azul-escuro); padding: 14px; border-radius: 10px; margin-bottom: 24px;
+  display: flex; flex-wrap: wrap; gap: 10px; justify-content: center;
+}
+.navegacao a { color: var(--branco); padding: 8px 14px; border-radius: 6px; transition: background 0.2s; font-size: 0.95rem; }
+.navegacao a:hover { background: var(--azul-intermediario); }
+.cartoes-grade { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
+.cartao {
+  background: var(--branco); border-radius: 10px; overflow: hidden;
+  box-shadow: 0 3px 8px var(--sombra); transition: transform 0.2s;
+}
+.cartao:hover { transform: translateY(-4px); }
+.cartao img { width: 100%; height: 160px; object-fit: cover; background: #d1dce8; }
+.cartao-conteudo { padding: 16px; }
+.aviso-expiracao {
+  background: #FFF3CD; color: #856404; padding: 8px; border-radius: 4px;
+  font-size: 0.9rem; margin: 10px 0;
+}
+/* =============================================
+   RESPONSIVIDADE
+   ============================================= */
+@media (max-width: 768px) {
+  .caixa-formulario { margin: 20px; padding: 24px; }
+  .navegacao { flex-direction: column; text-align: center; }
+}
+.oculto { display: none !important; }
+.area-chat { background: white; padding: 16px; border-radius: 8px; height: 300px; overflow-y: auto; margin-bottom: 16px; }
+.msg-chat { padding: 6px 10px; border-bottom: 1px solid #eee; }
+.link-instagram { color: #E1306C; font-weight: 600; text-decoration: underline; }
+.link-instagram:hover { color: #C13584; }
+  </style>
+</head>
+<body>
+<!-- ==============================================
+     LOGO DO URSO JÁ EMBUTIDA NO CÓDIGO 🐻
+     ============================================== -->
+<svg xmlns="http://www.w3.org/2000/svg" style="display:none;">
+  <symbol id="logo-urso" viewBox="0 0 720 720">
+    <circle cx="360" cy="360" r="360" fill="#b8b8b8"/>
+    <ellipse cx="360" cy="400" rx="280" ry="240" fill="#5D2906"/>
+    <ellipse cx="160" cy="220" rx="90" ry="110" fill="#5D2906"/>
+    <ellipse cx="560" cy="220" rx="90" ry="110" fill="#5D2906"/>
+    <ellipse cx="160" cy="240" rx="50" ry="70" fill="#B88663"/>
+    <ellipse cx="560" cy="240" rx="50" ry="70" fill="#B88663"/>
+    <circle cx="280" cy="360" r="24" fill="#000"/>
+    <circle cx="440" cy="360" r="24" fill="#000"/>
+    <ellipse cx="360" cy="440" rx="50" ry="40" fill="#B88663"/>
+    <ellipse cx="360" cy="430" rx="18" ry="14" fill="#000"/>
+  </symbol>
+</svg>
+
+<!-- ==============================================
+     TELA DE LOGIN
+     ============================================== -->
+<div id="tela-login" class="caixa-formulario">
+  <svg class="logo-topo" viewBox="0 0 720 720"><use href="#logo-urso"/></svg>
+  <h1 class="titulo">🔐 Acessar Sistema</h1>
+  <div class="linha-divisoria"><span>ou</span></div>
+  <form id="form-login">
+    <div class="grupo-campo">
+      <label for="email-login">E-mail institucional</label>
+      <input type="email" id="email-login" placeholder="0000111234567X@al.educacao.sp.gov.br" required>
+      <p class="aviso-email">⚠️ Formato: <strong>000011</strong> + 7 números + 1 dígito (0-9 ou X/x) + <strong>@al.educacao.sp.gov.br</strong><br>Exemplo: 0000111234567X@al.educacao.sp.gov.br</p>
+    </div>
+    <div class="grupo-campo">
+      <label for="senha-login">Senha</label>
+      <input type="password" id="senha-login" placeholder="Digite sua senha" required>
+    </div>
+    <div id="msg-login" class="mensagem"></div>
+    <button type="submit" class="botao">Entrar</button>
+  </form>
+  <p style="text-align:center; margin-top:20px;">
+    Não tem conta? <a href="#" onclick="exibirTela('cadastro')" style="color:#0A2342; font-weight:bold;">Cadastre-se</a>
+  </p>
+</div>
+<!-- ==============================================
+     TELA DE CADASTRO
+     ============================================== -->
+<div id="tela-cadastro" class="caixa-formulario oculto">
+  <svg class="logo-topo" viewBox="0 0 720 720"><use href="#logo-urso"/></svg>
+  <h1 class="titulo">📝 Cadastrar-se</h1>
+  <form id="form-cadastro">
+    <div class="grupo-campo">
+      <label>Nome completo</label>
+      <input type="text" id="nome" required>
+    </div>
+    <div class="grupo-campo">
+      <label>Nome da sua Escola</label>
+      <input type="text" id="escola" placeholder="Ex: E.M João de Melo / E.E Poppovic" required>
+      <p class="aviso-escola">⚠️ Deve começar com: <strong>E.M</strong> | <strong>E.E</strong> | <strong>E.F</strong> | <strong>E.P</strong></p>
+    </div>
+    <div class="grupo-campo">
+      <label>Data de nascimento</label>
+      <input type="date" id="nascimento" required>
+      <small id="idade-exibida" style="color:#0A2342;"></small>
+    </div>
+    <div class="grupo-campo">
+      <label>Número de telefone</label>
+      <input type="tel" id="telefone" placeholder="(11) 9XXXX-XXXX" required>
+      <p class="aviso-telefone">⚠️ DDD válido de SP (11 a 19) + começar com 9<br>Exemplo: (11) 91234-5678</p>
+    </div>
+    <div class="grupo-campo">
+      <label>E-mail institucional</label>
+      <input type="email" id="email" placeholder="0000111234567X@al.educacao.sp.gov.br" required>
+      <p class="aviso-email">⚠️ Formato: <strong>000011</strong> + 7 números + 1 dígito (0-9 ou X/x) + <strong>@al.educacao.sp.gov.br</strong><br>Exemplo: 00001198765432@al.educacao.sp.gov.br</p>
+    </div>
+    <div class="grupo-campo">
+      <label>Senha (mínimo 6 caracteres)</label>
+      <input type="password" id="senha" required>
+    </div>
+    <div id="msg-cadastro" class="mensagem"></div>
+    <button type="submit" class="botao">Cadastrar</button>
+  </form>
+  <button class="botao botao-voltar" onclick="exibirTela('login')">← Voltar para Login</button>
+</div>
+<!-- ==============================================
+     TELA PRINCIPAL
+     ============================================== -->
+<div id="tela-principal" class="container oculto">
+  <div style="display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 16px;">
+    <svg class="logo-cabecalho" viewBox="0 0 720 720"><use href="#logo-urso"/></svg>
+    <h1 class="titulo" style="margin: 0;">🏠 Achados e Perdidos</h1>
+  </div>
+  <div style="text-align:center;">
+    <span class="badge-escola" id="nome-escola-atual"></span>
+  </div>
+  <nav class="navegacao">
+    <a href="#" onclick="exibirSubtela('inicio')">Início</a>
+    <a href="#" onclick="exibirSubtela('cadastrar-objeto')">Cadastrar Objeto</a>
+    <a href="#" onclick="exibirSubtela('chat')">Chat</a>
+    <a href="#" onclick="exibirSubtela('perfil')">Meu Perfil</a>
+    <a href="#" onclick="exibirSubtela('informacoes')">Sobre Nós</a>
+    <a href="#" onclick="sair()">Sair</a>
+  </nav>
+  <section id="sub-inicio">
+    <h2 class="subtitulo">📦 Objetos da sua Escola</h2>
+    <div id="lista-objetos" class="cartoes-grade"></div>
+  </section>
+  <section id="sub-detalhes" class="oculto">
+    <h2 class="subtitulo">📋 Detalhes do Objeto</h2>
+    <div id="conteudo-detalhes"></div>
+    <button class="botao botao-voltar" onclick="exibirSubtela('inicio')">← Voltar</button>
+  </section>
+  <section id="sub-cadastrar-objeto" class="oculto">
+    <h2 class="subtitulo">➕ Cadastrar Objeto</h2>
+    <form id="form-objeto">
+      <div class="grupo-campo">
+        <label>📷 Foto do aparelho:</label>
+        <input type="file" id="objeto-arquivo" accept="image/*">
+        <img id="preview-objeto" class="preview-foto oculto" alt="Pré-visualização">
+        <p class="ou-separador">—————— ou ——————</p>
+        <label>🔗 Link da imagem:</label>
+        <input type="url" id="objeto-imagem" placeholder="https://...">
+      </div>
+      <div class="grupo-campo">
+        <label>Descrição</label>
+        <textarea id="objeto-descricao" rows="4" required placeholder="Descreva o objeto..."></textarea>
+      </div>
+      <div class="grupo-campo">
+        <label>Local perdido/encontrado</label>
+        <input type="text" id="objeto-local" required>
+      </div>
+      <div id="msg-objeto" class="mensagem"></div>
+      <button type="submit" class="botao">Salvar Objeto</button>
+    </form>
+    <button class="botao botao-voltar" onclick="exibirSubtela('inicio')">← Voltar</button>
+  </section>
+  <section id="sub-chat" class="oculto">
+    <h2 class="subtitulo">💬 Mensagens da Escola</h2>
+    <div id="caixa-chat" class="area-chat"></div>
+    <form id="form-chat">
+      <div class="grupo-campo">
+        <input type="text" id="mensagem-chat" placeholder="Escreva..." required>
+      </div>
+      <button type="submit" class="botao">Enviar</button>
+    </form>
+    <button class="botao botao-voltar" onclick="exibirSubtela('inicio')">← Voltar</button>
+  </section>
+  <section id="sub-perfil" class="oculto">
+    <h2 class="subtitulo">👤 Meu Perfil</h2>
+    <div id="dados-perfil" style="background:white; padding:20px; border-radius:8px;"></div>
+    <div style="margin-top:16px; display:flex; gap:10px; flex-wrap:wrap;">
+      <button class="botao botao-linha" onclick="exibirSubtela('editar-perfil')">✏️ Editar</button>
+      <button class="botao botao-linha" onclick="exibirSubtela('escolher-foto')">📸 Foto</button>
+    </div>
+    <button class="botao botao-voltar" onclick="exibirSubtela('inicio')">← Voltar</button>
+  </section>
+  <section id="sub-editar-perfil" class="oculto">
+    <h2 class="subtitulo">✏️ Editar Perfil</h2>
+    <form id="form-editar">
+      <div class="grupo-campo">
+        <label>Nome completo</label>
+        <input type="text" id="editar-nome" required>
+      </div>
+      <div id="msg-editar" class="mensagem"></div>
+      <button type="submit" class="botao">Salvar Alterações</button>
+    </form>
+    <button class="botao botao-voltar" onclick="exibirSubtela('perfil')">← Voltar ao Perfil</button>
+  </section>
+  <section id="sub-escolher-foto" class="oculto">
+    <h2 class="subtitulo">📸 Foto de Perfil</h2>
+    <form id="form-foto">
+      <div class="grupo-campo">
+        <label>Selecione do aparelho:</label>
+        <input type="file" id="foto-arquivo" accept="image/*">
+        <img id="preview-foto" class="preview-foto oculto" alt="Pré-visualização">
+      </div>
+      <div id="msg-foto" class="mensagem"></div>
+      <button type="submit" class="botao">Salvar</button>
+    </form>
+    <button class="botao botao-voltar" onclick="exibirSubtela('perfil')">← Voltar ao Perfil</button>
+  </section>
+  <section id="sub-informacoes" class="oculto">
+    <h2 class="subtitulo">ℹ️ Sobre Nós</h2>
+    <div style="background:white; padding:24px; border-radius:8px; line-height:1.8;">
+      <p><strong>Achados e Perdidos</strong> — Cada escola tem seu próprio espaço 🏫</p>
+      <p>🏫 Escolas: E.M / E.E / E.F / E.P</p>
+      <p>📧 E-mail: 000011 + 7 números + 1 dígito (0-9 ou X/x) + @al.educacao.sp.gov.br</p>
+      <p>📱 Telefone: DDD 11-19 + 9 + 8 dígitos</p>
+      <p>📅 Objetos expiram em 30 dias</p>
+      <br>
+      <p>📸 Siga nosso Instagram: 
+        <a href="https://www.instagram.com/achadoseperdidosmelo?stkn=MWtseDBxZ2RlNmxrZQ==" target="_blank" class="link-instagram">@achadoseperdidosmelo</a>
+      </p>
+    </div>
+    <button class="botao botao-voltar" onclick="exibirSubtela('inicio')">← Voltar</button>
+  </section>
+</div>
+<script>
+// =============================================
+// FUNÇÃO DE PROTEÇÃO
+// =============================================
+function escapar(texto) {
+  if (!texto) return '';
+  return String(texto)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+// =============================================
+// BANCO DE DADOS
+// =============================================
+const BANCO_DADOS = {
+  usuarios: JSON.parse(localStorage.getItem('achados_usuarios') || '[]'),
+  objetos: JSON.parse(localStorage.getItem('achados_objetos') || '[]'),
+  mensagens: JSON.parse(localStorage.getItem('achados_mensagens') || '[]'),
+  usuarioLogado: null,
+  fotoPerfilBase64: null,
+  fotoObjetoBase64: null
+};
+function salvarDados() {
+  localStorage.setItem('achados_usuarios', JSON.stringify(BANCO_DADOS.usuarios));
+  localStorage.setItem('achados_objetos', JSON.stringify(BANCO_DADOS.objetos));
+  localStorage.setItem('achados_mensagens', JSON.stringify(BANCO_DADOS.mensagens));
+}
+// =============================================
+// VALIDAÇÃO DA ESCOLA
+// =============================================
+function validarEscola(nomeEscola) {
+  if (!nomeEscola) return false;
+  const nome = nomeEscola.trim().toUpperCase();
+  const padraoValido = /^(E\.M|EM|E\.E|EE|E\.F|EF|E\.P|EP)/;
+  return padraoValido.test(nome);
+}
+// =============================================
+// FILTROS POR ESCOLA
+// =============================================
+function objetosDaMinhaEscola() {
+  if (!BANCO_DADOS.usuarioLogado) return [];
+  return BANCO_DADOS.objetos.filter(obj => obj.escola === BANCO_DADOS.usuarioLogado.escola);
+}
+function mensagensDaMinhaEscola() {
+  if (!BANCO_DADOS.usuarioLogado) return [];
+  return BANCO_DADOS.mensagens.filter(m => m.escola === BANCO_DADOS.usuarioLogado.escola);
+}
+// =============================================
+// VALIDAÇÕES
+// =============================================
+function hashSenha(senha) {
+  let hash = 0;
+  for (let i = 0; i < senha.length; i++) {
+    const c = senha.charCodeAt(i);
+    hash = ((hash << 5) - hash) + c;
+    hash = hash & hash;
+  }
+  return 'HASH_' + Math.abs(hash).toString(16);
+}
+
+// ✅ E-mail: 000011 + 7 dígitos + 1 dígito verificador (0-9 ou X/x) + @al.educacao.sp.gov.br
+function validarEmail(email) {
+  const padrao = /^000011\d{7}[0-9X]@al\.educacao\.sp\.gov\.br$/i;
+  return padrao.test(email.trim());
+}
+
+// ✅ Telefone: DDD 11-19 + começa com 9 + 8 dígitos
+function validarTelefone(tel) {
+  const limpo = tel.replace(/\D/g, '');
+  const padrao = /^1[1-9]9\d{8}$/;
+  return padrao.test(limpo);
+}
+
+function calcularIdade(nasc) {
+  if (!nasc) return 0;
+  const d = new Date(nasc), hj = new Date();
+  let id = hj.getFullYear() - d.getFullYear();
+  const m = hj.getMonth() - d.getMonth();
+  if (m < 0 || (m === 0 && hj.getDate() < d.getDate())) id--;
+  return id;
+}
+function mostrarMensagem(id, txt, tipo='sucesso') {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.textContent = txt;
+  el.className = `mensagem ${tipo}`;
+  el.style.display = 'block';
+  setTimeout(() => el.style.display = 'none', 5000);
+}
+// =============================================
+// NAVEGAÇÃO
+// =============================================
+function exibirTela(nome) {
+  document.getElementById('tela-login').classList.add('oculto');
+  document.getElementById('tela-cadastro').classList.add('oculto');
+  document.getElementById('tela-principal').classList.add('oculto');
+  if (nome === 'login') document.getElementById('tela-login').classList.remove('oculto');
+  if (nome === 'cadastro') document.getElementById('tela-cadastro').classList.remove('oculto');
+  if (nome === 'principal') {
+    document.getElementById('tela-principal').classList.remove('oculto');
+    document.getElementById('nome-escola-atual').textContent = `🏫 ${BANCO_DADOS.usuarioLogado.escola}`;
+    exibirSubtela('inicio');
+  }
+}
+function exibirSubtela(nome, idObjeto = null) {
+  document.querySelectorAll('#tela-principal section').forEach(s => s.classList.add('oculto'));
+  const sec = document.getElementById(`sub-${nome}`);
+  if (sec) sec.classList.remove('oculto');
+  if (nome === 'inicio') carregarObjetosEscola();
+  if (nome === 'detalhes' && idObjeto) exibirDetalhes(idObjeto);
+  if (nome === 'perfil') carregarPerfil();
+  if (nome === 'chat') carregarChatEscola();
+  if (nome === 'editar-perfil') preencherEditar();
+  if (nome === 'escolher-foto') {
+    BANCO_DADOS.fotoPerfilBase64 = null;
+    document.getElementById('preview-foto').classList.add('oculto');
+    document.getElementById('form-foto').reset();
+  }
+  if (nome === 'cadastrar-objeto') {
+    BANCO_DADOS.fotoObjetoBase64 = null;
+    document.getElementById('preview-objeto').classList.add('oculto');
+    document.getElementById('form-objeto').reset();
+  }
+}
+// =============================================
+// LOGIN
+// =============================================
+document.getElementById('form-login').addEventListener('submit', e => {
+  e.preventDefault();
+  const email = document.getElementById('email-login').value.trim();
+  const senha = document.getElementById('senha-login').value;
+  if (!validarEmail(email)) {
+    mostrarMensagem('msg-login', 'E-mail inválido! Use: 000011+7números+1dígito(0-9/X)@al.educacao.sp.gov.br', 'erro'); return;
+  }
+  const u = BANCO_DADOS.usuarios.find(x => x.email === email);
+  if (!u) { mostrarMensagem('msg-login', 'Conta não encontrada', 'erro'); return; }
+  if (u.senhaHash !== hashSenha(senha)) {
+    mostrarMensagem('msg-login', 'Senha incorreta', 'erro'); return;
+  }
+  BANCO_DADOS.usuarioLogado = u;
+  mostrarMensagem('msg-login', `Bem-vindo! 🏫 ${u.escola}`, 'sucesso');
+  setTimeout(() => exibirTela('principal'), 1200);
+});
+// =============================================
+// CADASTRO
+// =============================================
+document.getElementById('nascimento').addEventListener('input', () => {
+  const i = calcularIdade(document.getElementById('nascimento').value);
+  document.getElementById('idade-exibida').textContent = i>0 ? `Idade: ${i} anos` : '';
+});
+document.getElementById('form-cadastro').addEventListener('submit', e => {
+  e.preventDefault();
+  const nome = document.getElementById('nome').value.trim();
+  const escola = document.getElementById('escola').value.trim();
+  const nascimento = document.getElementById('nascimento').value;
+  const telefone = document.getElementById('telefone').value.trim();
+  const email = document.getElementById('email').value.trim();
+  const senha = document.getElementById('senha').value;
+  if (!nome || !escola || !nascimento || !telefone || !email || !senha) {
+    mostrarMensagem('msg-cadastro', 'Preencha todos os campos!', 'erro'); return;
+  }
+  if (!validarEscola(escola)) {
+    mostrarMensagem('msg-cadastro', 'Escola deve começar com: E.M / E.E / E.F / E.P', 'erro'); return;
+  }
+  if (!validarEmail(email)) {
+    mostrarMensagem('msg-cadastro', 'E-mail inválido! Formato: 000011+7números+1dígito(0-9/X)@al.educacao.sp.gov.br', 'erro'); return;
+  }
+  if (!validarTelefone(telefone)) {
+    mostrarMensagem('msg-cadastro', 'Telefone inválido! Use DDD(11-19) + 9 + 8 dígitos', 'erro'); return;
+  }
+  if (senha.length < 6) {
+    mostrarMensagem('msg-cadastro', 'Mínimo 6 caracteres na senha', 'erro'); return;
+  }
+  if (BANCO_DADOS.usuarios.find(x => x.email === email)) {
+    mostrarMensagem('msg-cadastro', 'E-mail já cadastrado', 'erro'); return;
+  }
+  const novo = {
+    id: Date.now(), nome, escola: escola.trim(), nascimento, telefone, email,
+    senhaHash: hashSenha(senha), fotoPerfil: null, objetosCadastrados: []
+  };
+  BANCO_DADOS.usuarios.push(novo);
+  BANCO_DADOS.usuarioLogado = novo;
+  salvarDados();
+  mostrarMensagem('msg-cadastro', `Cadastrado! 🏫 ${escola}`, 'sucesso');
+  setTimeout(() => exibirTela('principal'), 1500);
+});
+// =============================================
+// PREVISUALIZA FOTOS
+// =============================================
+document.getElementById('objeto-arquivo').addEventListener('change', e => {
+  const arq = e.target.files[0];
+  if (!arq || !arq.type.startsWith('image/')) return alert('Escolha uma imagem!');
+  const leitor = new FileReader();
+  leitor.onload = ev => {
+    BANCO_DADOS.fotoObjetoBase64 = ev.target.result;
+    const prev = document.getElementById('preview-objeto');
+    prev.src = ev.target.result;
+    prev.classList.remove('oculto');
+  };
+  leitor.readAsDataURL(arq);
+});
+document.getElementById('foto-arquivo').addEventListener('change', e => {
+  const arq = e.target.files[0];
+  if (!arq || !arq.type.startsWith('image/')) return alert('Escolha uma imagem!');
+  const leitor = new FileReader();
+  leitor.onload = ev => {
+    BANCO_DADOS.fotoPerfilBase64 = ev.target.result;
+    const prev = document.getElementById('preview-foto');
+    prev.src = ev.target.result;
+    prev.classList.remove('oculto');
+  };
+  leitor.readAsDataURL(arq);
+});
+// =============================================
+// OBJETOS
+// =============================================
+function diasRestantes(data) {
+  const post = new Date(data), exp = new Date(post.getTime() + 30*24*60*60*1000);
+  return Math.max(0, Math.ceil((exp - new Date())/(1000*60*60*24)));
+}
+function carregarObjetosEscola() {
+  const lista = document.getElementById('lista-objetos');
+  lista.innerHTML = '';
+  const meus = objetosDaMinhaEscola();
+  if (meus.length === 0) {
+    lista.innerHTML = '<p style="grid-column:1/-1; text-align:center; padding:40px; color:#555;">Nenhum objeto cadastrado na sua escola ainda.</p>';
+    return;
+  }
+  meus.forEach(obj => {
+    const dias = diasRestantes(obj.dataPostagem);
+    const imgSrc = escapar(obj.imagem) || '';
+    lista.innerHTML += `
+      <div class="cartao">
+        <img src="${imgSrc}" alt="" onerror="this.src=''; this.style.background='#d1dce8';">
+        <div class="cartao-conteudo">
+          <p>${escapar(obj.descricao)}</p>
+          <p><strong>Local:</strong> ${escapar(obj.local)}</p>
+          <p style="font-size:0.85rem; color:#666;">Postado por ${escapar(obj.autorNome)}</p>
+          <div class="aviso-expiracao">Expira em ${dias} dias</div>
+          <button class="botao" style="font-size:0.9rem; padding:8px;" onclick="exibirSubtela('detalhes', ${obj.id})">Ver Detalhes</button>
+        </div>
+      </div>
+    `;
+  });
+}
+function exibirDetalhes(id) {
+  const obj = BANCO_DADOS.objetos.find(x => x.id === id);
+  if (!obj) return;
+  const dias = diasRestantes(obj.dataPostagem);
+  const data = new Date(obj.dataPostagem).toLocaleDateString('pt-BR');
+  const imgSrc = escapar(obj.imagem) || '';
+  document.getElementById('conteudo-detalhes').innerHTML = `
+    <div class="cartao">
+      <img src="${imgSrc}" alt="" onerror="this.src=''; this.style.background='#d1dce8';">
+      <div class="cartao-conteudo">
+        <p><strong>Descrição:</strong> ${escapar(obj.descricao)}</p>
+        <p><strong>Local:</strong> ${escapar(obj.local)}</p>
+        <p><strong>Escola:</strong> ${escapar(obj.escola)}</p>
+        <p><strong>Postado em:</strong> ${data} por ${escapar(obj.autorNome)}</p>
+        <div class="aviso-expiracao">Expira em ${dias} dias</div>
+      </div>
+    </div>
+  `;
+}
+// =============================================
+// CADASTRAR OBJETO
+// =============================================
+document.getElementById('form-objeto').addEventListener('submit', e => {
+  e.preventDefault();
+  if (!BANCO_DADOS.usuarioLogado) return alert('Faça login!');
+  const desc = document.getElementById('objeto-descricao').value.trim();
+  const loc = document.getElementById('objeto-local').value.trim();
+  const link = document.getElementById('objeto-imagem').value.trim();
+  if (!desc || !loc) { mostrarMensagem('msg-objeto', 'Preencha descrição e local', 'erro'); return; }
+  const img = BANCO_DADOS.fotoObjetoBase64 || link;
+  if (!img) { mostrarMensagem('msg-objeto', 'Escolha foto OU link', 'erro'); return; }
+  const novo = {
+    id: Date.now(), imagem: img, descricao: desc, local: loc,
+    dataPostagem: new Date().toISOString(),
+    escola: BANCO_DADOS.usuarioLogado.escola,
+    autorId: BANCO_DADOS.usuarioLogado.id,
+    autorNome: BANCO_DADOS.usuarioLogado.nome
+  };
+  BANCO_DADOS.objetos.push(novo);
+  BANCO_DADOS.usuarios.find(u => u.id === BANCO_DADOS.usuarioLogado.id).objetosCadastrados.push(novo.id);
+  salvarDados();
+  mostrarMensagem('msg-objeto', '✅ Objeto cadastrado com sucesso!', 'sucesso');
+  BANCO_DADOS.fotoObjetoBase64 = null;
+  setTimeout(() => exibirSubtela('inicio'), 1000);
+});
+// =============================================
+// CHAT
+// =============================================
+function carregarChatEscola() {
+  const caixa = document.getElementById('caixa-chat');
+  caixa.innerHTML = '';
+  mensagensDaMinhaEscola().forEach(m => {
+    caixa.innerHTML += `<p class="msg-chat"><strong>${escapar(m.nome)}:</strong> ${escapar(m.texto)}</p>`;
+  });
+  caixa.scrollTop = caixa.scrollHeight;
+}
+document.getElementById('form-chat').addEventListener('submit', e => {
+  e.preventDefault();
+  if (!BANCO_DADOS.usuarioLogado) return alert('Faça login!');
+  const txt = document.getElementById('mensagem-chat').value.trim();
+  if (!txt) return;
+  BANCO_DADOS.mensagens.push({
+    nome: BANCO_DADOS.usuarioLogado.nome, texto: txt,
+    escola: BANCO_DADOS.usuarioLogado.escola,
+    data: new Date().toISOString()
+  });
+  salvarDados();
+  document.getElementById('mensagem-chat').value = '';
+  carregarChatEscola();
+});
+// =============================================
+// PERFIL
+// =============================================
+function carregarPerfil() {
+  const u = BANCO_DADOS.usuarioLogado;
+  const fotoSrc = escapar(u.fotoPerfil) || '';
+  document.getElementById('dados-perfil').innerHTML = `
+    <div style="display:flex; align-items:center; gap:20px; flex-wrap:wrap;">
+      <img src="${fotoSrc}" style="width:100px; height:100px; border-radius:50%; object-fit:cover; background:#d1dce8;" alt="Foto de perfil" onerror="this.src=''; this.style.background='#d1dce8';">
+      <div>
+        <h3>${escapar(u.nome)}</h3>
+        <p>🏫 Escola: ${escapar(u.escola)}</p>
+        <p>📧 ${escapar(u.email)}</p>
+        <p>📱 ${escapar(u.telefone)}</p>
+        <p>📦 Objetos cadastrados: ${u.objetosCadastrados.length}</p>
+      </div>
+    </div>
+  `;
+}
+// =============================================
+// EDITAR PERFIL
+// =============================================
+function preencherEditar() {
+  if (BANCO_DADOS.usuarioLogado) {
+    document.getElementById('editar-nome').value = BANCO_DADOS.usuarioLogado.nome;
+  }
+}
+document.getElementById('form-editar').addEventListener('submit', e => {
+  e.preventDefault();
+  const nome = document.getElementById('editar-nome').value.trim();
+  if (!nome) { mostrarMensagem('msg-editar', 'Informe o nome', 'erro'); return; }
+  BANCO_DADOS.usuarioLogado.nome = nome;
+  const idx = BANCO_DADOS.usuarios.findIndex(u => u.id === BANCO_DADOS.usuarioLogado.id);
+  if (idx !== -1) BANCO_DADOS.usuarios[idx].nome = nome;
+  salvarDados();
+  mostrarMensagem('msg-editar', '✅ Nome alterado com sucesso!', 'sucesso');
+  setTimeout(() => exibirSubtela('perfil'), 1000);
+});
+// =============================================
+// SALVAR FOTO DE PERFIL
+// =============================================
+document.getElementById('form-foto').addEventListener('submit', e => {
+  e.preventDefault();
+  if (!BANCO_DADOS.fotoPerfilBase64) { mostrarMensagem('msg-foto', 'Escolha uma foto', 'erro'); return; }
+  BANCO_DADOS.usuarioLogado.fotoPerfil = BANCO_DADOS.fotoPerfilBase64;
+  const idx = BANCO_DADOS.usuarios.findIndex(u => u.id === BANCO_DADOS.usuarioLogado.id);
+  if (idx !== -1) BANCO_DADOS.usuarios[idx].fotoPerfil = BANCO_DADOS.fotoPerfilBase64;
+  salvarDados();
+  mostrarMensagem('msg-foto', '✅ Foto salva!', 'sucesso');
+  BANCO_DADOS.fotoPerfilBase64 = null;
+  setTimeout(() => exibirSubtela('perfil'), 1000);
+});
+// =============================================
+// SAIR
+// =============================================
+function sair() {
+  BANCO_DADOS.usuarioLogado = null;
+  exibirTela('login');
+}
+</script>
+</body>
+</html>
